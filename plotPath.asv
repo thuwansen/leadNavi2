@@ -1,0 +1,85 @@
+function plotPath(maindir,pathPoint,handles)
+%本函数功能是在step5中绘制路径，包含轴状位，冠状位和矢状位三个方位的显示
+%其中轴状位低的层次，冠状位后的层次，以及矢状位左右的层次不再显示
+global ref_img;
+global ref_hdr;
+global ref_range;
+global myScale;
+global lPath;
+global rPath;
+global targetPoints;
+global slicenum;
+tempPoint=coordinateChange(targetPoints,1);
+global pathAngle;
+[L1,L2,pointInSlice]=calThePoint(maindir,pathAngle,handles);
+
+switch maindir
+    case 1
+        set(handles.sliderAxis,'sliderstep',[0.011,0.11]);
+        axes(handles.mainView);
+        indexX=round(ref_hdr.dim(1)*get(handles.sliderAxis,'Value'));
+        set(handles.TX1,'String',round(ref_hdr.dim(1)*(1-get(handles.sliderAxis,'Value'))));
+        sagImg=imageshow([], [], ref_hdr, ref_img, indexX, 1, [], ref_range,maindir);
+        mainViewH=imshow(sagImg);
+        set(mainViewH,'ButtonDownFcn',{@mainView_ButtonDownFcn,handles});
+        if L1>=0&&pointInSlice(1,1)<=ref_hdr.dim(2)&&pointInSlice(1,2)>=0
+            hold on;
+            lPath=plot([tempPoint(4,2),pathPoint(1,2)],[tempPoint(4,3),pathPoint(1,3)],'-.y');
+            hold on;
+            plot(pointInSlice(1,1),pointInSlice(1,2),'+g');
+        end
+        if L2>=0&&pointInSlice(2,1)<=ref_hdr.dim(2)&&pointInSlice(2,2)>=0
+            hold on;
+            rPath=plot([tempPoint(5,2),pathPoint(2,2)],[tempPoint(5,3),pathPoint(2,3)],'-.y');
+            hold on;
+            plot(pointInSlice(2,1),pointInSlice(2,2),'+g');
+        end
+    case 2
+        set(handles.sliderAxis,'sliderstep',[0.011,0.11]);
+        axes(handles.mainView);
+        indexY = round(get(handles.sliderAxis,'Value')*ref_hdr.dim(2));
+        mainImg = imageshow([], [], ref_hdr, ref_img, indexY, ...
+            0, [], ref_range, maindir);
+        set(handles.TY1,'String',round((1-get(handles.sliderAxis,'Value'))*ref_hdr.dim(2))); 
+        axes(handles.mainView);
+        mainViewH = imshow(mainImg); 
+        set(mainViewH,'ButtonDownFcn',{@mainView_ButtonDownFcn,handles});
+        if L1>=0&&pointInSlice(1,1)<=ref_hdr.dim(1)&&pointInSlice(1,2)>=0;
+            hold on;
+            lPath=plot([tempPoint(4,1),pathPoint(3,1)],[tempPoint(4,3),pathPoint(3,3)],'-.y');
+            hold on;            
+            plot(pointInSlice(1,1),pointInSlice(1,2),'+g'); 
+        end
+        if L2>=0&&pointInSlice(2,1)>=0&&pointInSlice(1,2)>=0;
+            hold on;
+            rPath=plot([tempPoint(5,1),pathPoint(4,1)],[tempPoint(5,3),pathPoint(4,3)],'-.y');
+            hold on;
+            plot(pointInSlice(2,1),pointInSlice(2,2),'+g'); 
+        end
+        
+    case 3
+        set(handles.sliderAxis,'sliderstep',[1/ref_hdr.dim(3),0.1]);
+        axes(handles.mainView);
+        slicenum = round(get(handles.sliderAxis,'Value')*ref_hdr.dim(3));
+        mainImg = imageshow([], [], ref_hdr, ref_img, slicenum, ...
+            0, [], ref_range, maindir);
+        slicenum_correct=slicenum*myScale;
+        set(handles.TZ1,'String',slicenum_correct);
+        axes(handles.mainView);
+        mainViewH = imshow(mainImg); 
+        set(mainViewH,'ButtonDownFcn',{@mainView_ButtonDownFcn,handles});
+%         if pointInSlice(1,1)>=tempPoint(4,1)&&pointInSlice(1,1)<=ref_hdr.dim(1);
+        
+            hold on;
+            lPath=plot([tempPoint(4,1),pathPoint(5,1)],[tempPoint(4,2),pathPoint(5,2)],'-.y');
+            hold on;
+            plot(pointInSlice(1,1),pointInSlice(1,2),'+g');
+        end
+        if pointInSlice(2,1)<=tempPoint(5,1)&&pointInSlice(2,1)>=0;
+            hold on;
+            rPath=plot([tempPoint(5,1),pathPoint(6,1)],[tempPoint(5,2),pathPoint(6,2)],'-.y');
+            hold on;
+            plot(pointInSlice(2,1),pointInSlice(2,2),'+g');
+        end
+
+end
